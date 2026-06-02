@@ -1,4 +1,5 @@
 pub mod audio_meta;
+pub mod commands;
 pub mod converter;
 pub mod models;
 
