@@ -1,19 +1,22 @@
-pub mod audio_meta;
-pub mod commands;
-pub mod converter;
-pub mod models;
+mod audio_meta;
+mod commands;
+mod converter;
+mod models;
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+use commands::AppState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
+        .manage(AppState::default())
+        .invoke_handler(tauri::generate_handler![
+            commands::scan_audio_files,
+            commands::start_conversion,
+            commands::open_folder,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
