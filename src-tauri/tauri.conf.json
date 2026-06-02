@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "frog-voice",
-        "width": 800,
-        "height": 600
+        "title": "🐸 FrogVoice",
+        "width": 720,
+        "height": 560,
+        "minWidth": 600,
+        "minHeight": 480,
+        "center": true
       }
     ],
     "security": {
@@ -30,6 +33,7 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "externalBin": ["binaries/ffmpeg"]
   }
 }
