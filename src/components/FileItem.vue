@@ -23,6 +23,7 @@ defineProps<{ entry: FileEntry }>();
       </template>
       <span v-else class="status-text" :class="getStatusClass(entry.status)">
         {{ getStatusText(entry.status) }}
+        <span v-if="entry.status.type === 'Failed'" class="error-detail" :title="entry.status.error">{{ entry.status.error }}</span>
       </span>
     </div>
     <div class="file-output">
@@ -119,6 +120,17 @@ defineProps<{ entry: FileEntry }>();
 
 .status-text.status-failed {
   color: var(--error-color);
+}
+
+.error-detail {
+  display: block;
+  font-size: 10px;
+  color: var(--error-color);
+  opacity: 0.7;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .status-text.converting {

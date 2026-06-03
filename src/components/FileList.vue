@@ -24,6 +24,9 @@ defineProps<{ files: FileEntry[] }>();
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .file-list-header {
@@ -44,7 +47,8 @@ defineProps<{ files: FileEntry[] }>();
 }
 
 .file-list-body {
-  max-height: 300px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 

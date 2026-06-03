@@ -185,20 +185,18 @@ fn run_ffmpeg(
             return Err("转换已取消".to_string());
         }
 
-        // Check timeout
         if start.elapsed() > Duration::from_secs(CONVERT_TIMEOUT_SECS) {
             return Err("转换超时（10分钟）".to_string());
         }
 
         let event = tauri::async_runtime::block_on(async {
-            tokio::time::timeout(Duration::from_millis(100), rx.recv()).await
+            tokio::time::timeout(Duration::from_millis(500), rx.recv()).await
         });
 
         match event {
             Ok(Some(CommandEvent::Stderr(line))) => {
                 let line_str = String::from_utf8_lossy(&line);
 
-                // Report progress at throttled intervals
                 if total_duration > 0.0
                     && last_progress_report.elapsed() >= PROGRESS_REPORT_INTERVAL
                 {
@@ -218,15 +216,9 @@ fn run_ffmpeg(
                 exit_code = status.code;
                 break;
             }
-            Ok(Some(CommandEvent::Stdout(_))) => {}
             Ok(Some(_)) => {}
-            Ok(None) => {
-                // Channel closed without termination event
-                break;
-            }
-            Err(_) => {
-                // Timeout elapsed, continue loop to check cancel/timeout
-            }
+            Ok(None) => break,
+            Err(_) => {}
         }
     }
 

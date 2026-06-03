@@ -7,6 +7,7 @@ const props = defineProps<{
   label: string;
   icon: string;
   modelValue: string;
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -17,7 +18,17 @@ const { isDragging, onDragOver, onDragLeave, onDrop } = useDragDrop();
 
 const displayPath = computed(() => props.modelValue || '拖拽文件夹到此处');
 
+function handleDragOver(e: DragEvent) {
+  if (props.disabled) return;
+  onDragOver(e);
+}
+
+function handleDragLeave(e: DragEvent) {
+  onDragLeave(e);
+}
+
 function handleDrop(e: DragEvent) {
+  if (props.disabled) return;
   const path = onDrop(e);
   if (path) {
     emit('update:modelValue', path);
@@ -25,6 +36,7 @@ function handleDrop(e: DragEvent) {
 }
 
 async function browse() {
+  if (props.disabled) return;
   const selected = await open({ directory: true, multiple: false });
   if (selected) {
     emit('update:modelValue', selected);
@@ -35,9 +47,9 @@ async function browse() {
 <template>
   <div
     class="drop-zone"
-    :class="{ active: isDragging, 'has-path': modelValue }"
-    @dragover="onDragOver"
-    @dragleave="onDragLeave"
+    :class="{ active: isDragging && !disabled, 'has-path': modelValue, disabled }"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
     @drop="handleDrop"
     @click="browse"
   >
@@ -58,7 +70,7 @@ async function browse() {
   transition: all 0.2s ease;
 }
 
-.drop-zone:hover {
+.drop-zone:hover:not(.disabled) {
   border-color: var(--primary-color);
   background: var(--surface-hover);
 }
@@ -72,6 +84,12 @@ async function browse() {
 .drop-zone.has-path {
   border-color: var(--success-color);
   border-style: solid;
+}
+
+.drop-zone.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: auto;
 }
 
 .drop-icon {

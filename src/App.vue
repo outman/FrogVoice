@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import DropZone from './components/DropZone.vue';
 import FileList from './components/FileList.vue';
 import ActionBar from './components/ActionBar.vue';
@@ -11,6 +11,7 @@ const outputDir = ref('');
 const {
   files,
   isConverting,
+  isScanning,
   doneSummary,
   error,
   scanFiles,
@@ -18,6 +19,8 @@ const {
   openFolder,
   reset,
 } = useConverter();
+
+const isLoading = computed(() => isScanning.value || isConverting.value);
 
 // When inputDir changes, scan for files
 watch(inputDir, async (newDir) => {
@@ -52,18 +55,26 @@ function handleOpenFolder() {
         v-model="inputDir"
         label="输入文件夹"
         icon="📁"
+        :disabled="isLoading"
       />
       <DropZone
         v-model="outputDir"
         label="输出文件夹"
         icon="📂"
+        :disabled="isLoading"
       />
+    </div>
+
+    <!-- Scanning overlay -->
+    <div v-if="isScanning" class="loading-banner">
+      <span class="loading-spinner"></span>
+      正在扫描音频文件，请稍候...
     </div>
 
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <div class="content">
-      <FileList :files="files" />
+      <FileList :files="files" class="file-list-wrapper" />
       <ActionBar
         :files="files"
         :is-converting="isConverting"
@@ -151,6 +162,32 @@ body {
   gap: 16px;
 }
 
+.loading-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--primary-dim);
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--primary-color);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--primary-dim);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .error-banner {
   background: var(--error-dim);
   border: 1px solid var(--error-color);
@@ -164,6 +201,11 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+.file-list-wrapper {
+  flex: 1;
   min-height: 0;
 }
 </style>

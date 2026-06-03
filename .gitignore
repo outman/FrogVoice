@@ -28,3 +28,12 @@ dist-ssr
 
 # Sidecar binaries
 src-tauri/binaries/ffmpeg-*
+
+# Windows cross-compilation SDK
+.xwin/
+
+# Distribution packages
+dist/frog-voice-*
+
+# xwin cache
+.xwin-cache/

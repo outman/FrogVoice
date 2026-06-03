@@ -1,0 +1,9 @@
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld"
+rustflags = [
+    "-Z", "unstable-options",
+    "-C", "linker-flavor=msvc-lld",
+    "-C", "link-arg=/LIBPATH:../.xwin/crt/lib/x86_64",
+    "-C", "link-arg=/LIBPATH:../.xwin/sdk/lib/um/x86_64",
+    "-C", "link-arg=/LIBPATH:../.xwin/sdk/lib/ucrt/x86_64",
+]
