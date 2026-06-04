@@ -2,7 +2,7 @@
 import type { FileEntry } from '../types';
 import { formatDuration, formatFileSize, getStatusText, getStatusClass } from '../types';
 
-defineProps<{ entry: FileEntry }>();
+defineProps<{ entry: FileEntry; bitRate: number }>();
 </script>
 
 <template>
@@ -13,7 +13,7 @@ defineProps<{ entry: FileEntry }>();
         {{ formatDuration(entry.file.duration_secs) }} · {{ formatFileSize(entry.file.size) }}
       </div>
     </div>
-    <div class="file-format">192kbps → MP3</div>
+    <div class="file-format">{{ bitRate }}kbps → MP3</div>
     <div class="file-status">
       <template v-if="entry.status.type === 'Converting'">
         <div class="progress-bar">

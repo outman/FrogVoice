@@ -2,7 +2,7 @@
 import type { FileEntry } from '../types';
 import FileItem from './FileItem.vue';
 
-defineProps<{ files: FileEntry[] }>();
+defineProps<{ files: FileEntry[]; bitRate: number }>();
 </script>
 
 <template>
@@ -11,7 +11,7 @@ defineProps<{ files: FileEntry[] }>();
       <span class="header-title">待转换文件 <span class="header-count">({{ files.length }} 个文件)</span></span>
     </div>
     <div class="file-list-body">
-      <FileItem v-for="entry in files" :key="entry.file.path" :entry="entry" />
+      <FileItem v-for="entry in files" :key="entry.file.path" :entry="entry" :bit-rate="bitRate" />
     </div>
   </div>
   <div v-else class="file-list-empty">

@@ -78,7 +78,7 @@ function handleOpenFolder() {
     <div v-if="error" class="error-banner">{{ error }}</div>
 
     <div class="content">
-      <FileList :files="files" class="file-list-wrapper" />
+      <FileList :files="files" :bit-rate="outputSettings.bitRate" class="file-list-wrapper" />
       <OutputSettings v-model:settings="outputSettings" :disabled="isLoading" />
       <ActionBar
         :files="files"
