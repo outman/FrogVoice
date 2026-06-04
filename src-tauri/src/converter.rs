@@ -177,7 +177,7 @@ fn convert_single_file(
     // Phase 2: Ensure stereo (mono → duplicate channels)
     let stereo_pcm = ensure_stereo(pcm);
 
-    // Phase 3: Resample to 44100Hz if needed
+    // Phase 3: Resample to target sample rate if needed
     let resampled = resample_if_needed(stereo_pcm, sample_rate)?;
 
     // Phase 4: Interleave planar to interleaved
@@ -224,7 +224,7 @@ fn ensure_stereo(pcm: decoder::PcmData) -> decoder::PcmData {
     }
 }
 
-/// Resample PCM data to 44100Hz if not already at that rate.
+/// Resample PCM data to the target sample rate if not already at that rate.
 fn resample_if_needed(pcm: decoder::PcmData, target_sample_rate: u32) -> Result<decoder::PcmData, String> {
     if pcm.sample_rate == target_sample_rate {
         return Ok(pcm);
