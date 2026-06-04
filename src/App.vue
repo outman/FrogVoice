@@ -3,7 +3,6 @@ import { ref, computed, watch } from 'vue';
 import DropZone from './components/DropZone.vue';
 import FileList from './components/FileList.vue';
 import ActionBar from './components/ActionBar.vue';
-import OutputSettings from './components/OutputSettings.vue';
 import { DEFAULT_OUTPUT_SETTINGS, type OutputSettings as OutputSettingsType } from './types';
 import { useConverter } from './composables/useConverter';
 
@@ -79,12 +78,12 @@ function handleOpenFolder() {
 
     <div class="content">
       <FileList :files="files" :bit-rate="outputSettings.bitRate" class="file-list-wrapper" />
-      <OutputSettings v-model:settings="outputSettings" :disabled="isLoading" />
       <ActionBar
         :files="files"
         :is-converting="isConverting"
         :output-dir="outputDir"
         :done-summary="doneSummary"
+        :settings="outputSettings"
         @start="handleStart"
         @open-folder="handleOpenFolder"
         @reset="resetConversion"
