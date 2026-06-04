@@ -1,6 +1,7 @@
 mod audio_meta;
 mod commands;
 mod converter;
+mod decoder;
 mod models;
 
 use commands::AppState;
@@ -9,7 +10,6 @@ use commands::AppState;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
