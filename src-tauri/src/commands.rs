@@ -22,8 +22,8 @@ impl Default for AppState {
 }
 
 #[tauri::command]
-pub fn scan_audio_files(app: tauri::AppHandle, input_dir: String) -> Result<Vec<AudioFile>, String> {
-    converter::scan_directory(&app, &input_dir)
+pub fn scan_audio_files(input_dir: String) -> Result<Vec<AudioFile>, String> {
+    converter::scan_directory(&input_dir)
 }
 
 #[tauri::command]
