@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="FrogVoice.png" alt="FrogVoice Logo" width="128" />
+</div>
+
 # 🐸 FrogVoice
 
 音频批量转 MP3 工具 —— 拖入文件夹，一键转换为 192kbps / 44100Hz 立体声 MP3。
@@ -53,7 +57,7 @@ rustup target add x86_64-pc-windows-msvc --toolchain nightly
 ./scripts/build-windows.sh
 ```
 
-输出：`src-tauri/target/x86_64-pc-windows-msvc/release/frog-voice.exe`
+输出：`src-tauri/target/x86_64-pc-windows-msvc/release/FrogVoice.exe`
 
 ## 技术栈
 

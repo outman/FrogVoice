@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "frog-voice",
+  "productName": "FrogVoice",
   "version": "0.1.0",
   "identifier": "cn.basecrypto.frog-voice",
   "build": {

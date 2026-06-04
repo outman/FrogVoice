@@ -1,5 +1,5 @@
 [package]
-name = "frog-voice"
+name = "FrogVoice"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
@@ -12,6 +12,7 @@ edition = "2021"
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "frog_voice_lib"
+# Note: lib name uses underscores (Cargo convention) and _lib suffix to avoid Windows conflict
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
