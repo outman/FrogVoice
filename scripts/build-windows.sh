@@ -47,8 +47,16 @@ cd "$PROJECT_DIR"
 echo "🚀 Building for Windows ($TARGET)..."
 echo ""
 
+# Set up cross-compilation for C code (used by mp3lame-sys via the cc crate).
+# The cc crate reads CC_<target> and AR_<target> with hyphens replaced by underscores.
+# Include paths point to the xwin-splatted Windows CRT/SDK headers (stdlib.h, etc.)
+XWIN_INCLUDES="-I$PROJECT_DIR/.xwin/crt/include -I$PROJECT_DIR/.xwin/sdk/include/ucrt -I$PROJECT_DIR/.xwin/sdk/include/um -I$PROJECT_DIR/.xwin/sdk/include/shared"
+
 RUSTUP_TOOLCHAIN=nightly \
 PATH="$LLVM_BIN:$PATH" \
+CC_x86_64_pc_windows_msvc="$LLVM_BIN/clang" \
+CFLAGS_x86_64_pc_windows_msvc="--target=$TARGET $XWIN_INCLUDES" \
+AR_x86_64_pc_windows_msvc="$LLVM_BIN/llvm-ar" \
 pnpm tauri build --target "$TARGET" --no-bundle
 
 # --- Report ---

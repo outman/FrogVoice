@@ -27,3 +27,9 @@ symphonia = { version = "0.5", features = ["aac", "flac", "mp3", "ogg", "wav", "
 mp3lame-encoder = "0.2"
 rubato = "0.15"
 
+# Patch mp3lame-sys to support cross-compilation to Windows from Unix.
+# The original crate uses autotools (./configure) which cannot cross-compile
+# to Windows MSVC. This patch uses the cc crate for Windows targets instead.
+[patch.crates-io]
+mp3lame-sys = { path = "patches/mp3lame-sys" }
+

@@ -63,7 +63,10 @@ if [[ -n "$TARGET" ]]; then
             exit 1
         fi
 
-        ENV_PREFIX="RUSTUP_TOOLCHAIN=nightly PATH=\"$LLVM_BIN:\$PATH\""
+        # Set up cross-compilation for C code (used by mp3lame-sys via the cc crate)
+        TARGET_UNDERSCORE="${TARGET//-/_}"
+        XWIN_INCLUDES="-I$PROJECT_DIR/.xwin/crt/include -I$PROJECT_DIR/.xwin/sdk/include/ucrt -I$PROJECT_DIR/.xwin/sdk/include/um -I$PROJECT_DIR/.xwin/sdk/include/shared"
+        ENV_PREFIX="RUSTUP_TOOLCHAIN=nightly PATH=\"$LLVM_BIN:\$PATH\" CC_${TARGET_UNDERSCORE}=\"$LLVM_BIN/clang\" CFLAGS_${TARGET_UNDERSCORE}=\"--target=$TARGET $XWIN_INCLUDES\" AR_${TARGET_UNDERSCORE}=\"$LLVM_BIN/llvm-ar\""
 
         if [[ "$BUNDLE" == false ]]; then
             BUILD_ARGS+=("--no-bundle")
