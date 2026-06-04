@@ -70,6 +70,8 @@ pub fn convert_files(
     files: &[AudioFile],
     output_dir: &str,
     cancel_flag: &AtomicBool,
+    sample_rate: u32,
+    bit_rate: u32,
 ) -> ConvertDoneEvent {
     let total = files.len();
     let mut success = 0;
@@ -109,7 +111,7 @@ pub fn convert_files(
             },
         );
 
-        match convert_single_file(app, &file.path, &output_path, cancel_flag) {
+        match convert_single_file(app, &file.path, &output_path, cancel_flag, sample_rate, bit_rate) {
             Ok(output_size) => {
                 success += 1;
                 let _ = app.emit(
@@ -148,6 +150,8 @@ fn convert_single_file(
     input_path: &str,
     output_path: &str,
     cancel_flag: &AtomicBool,
+    sample_rate: u32,
+    bit_rate: u32,
 ) -> Result<u64, String> {
     let start = Instant::now();
     let input_path_owned = input_path.to_string();
@@ -174,7 +178,7 @@ fn convert_single_file(
     let stereo_pcm = ensure_stereo(pcm);
 
     // Phase 3: Resample to 44100Hz if needed
-    let resampled = resample_if_needed(stereo_pcm)?;
+    let resampled = resample_if_needed(stereo_pcm, sample_rate)?;
 
     // Phase 4: Interleave planar to interleaved
     let interleaved = interleave(&resampled);
@@ -193,7 +197,7 @@ fn convert_single_file(
     );
 
     // Phase 6: Encode to MP3
-    encode_mp3(&interleaved, 2, 44100, output_path)?;
+    encode_mp3(&interleaved, 2, sample_rate, bit_rate, output_path)?;
 
     let output_size = std::fs::metadata(output_path)
         .map(|m| m.len())
@@ -221,15 +225,15 @@ fn ensure_stereo(pcm: decoder::PcmData) -> decoder::PcmData {
 }
 
 /// Resample PCM data to 44100Hz if not already at that rate.
-fn resample_if_needed(pcm: decoder::PcmData) -> Result<decoder::PcmData, String> {
-    if pcm.sample_rate == 44100 {
+fn resample_if_needed(pcm: decoder::PcmData, target_sample_rate: u32) -> Result<decoder::PcmData, String> {
+    if pcm.sample_rate == target_sample_rate {
         return Ok(pcm);
     }
 
     if pcm.samples.is_empty() || pcm.samples[0].is_empty() {
         return Ok(decoder::PcmData {
             samples: pcm.samples,
-            sample_rate: 44100,
+            sample_rate: target_sample_rate,
             channels: pcm.channels,
             duration_secs: pcm.duration_secs,
         });
@@ -247,7 +251,7 @@ fn resample_if_needed(pcm: decoder::PcmData) -> Result<decoder::PcmData, String>
         window: WindowFunction::BlackmanHarris2,
     };
 
-    let ratio = 44100.0 / pcm.sample_rate as f64;
+    let ratio = target_sample_rate as f64 / pcm.sample_rate as f64;
     let mut resampler = SincFixedIn::<f32>::new(ratio, 2.0, params, chunk_size, num_channels)
         .map_err(|e| format!("创建重采样器失败: {}", e))?;
 
@@ -277,7 +281,7 @@ fn resample_if_needed(pcm: decoder::PcmData) -> Result<decoder::PcmData, String>
 
         // For the last partial chunk, truncate output proportionally
         let output_frames = if pos + chunk_size > total_frames {
-            ((actual_chunk as f64 * 44100.0 / pcm.sample_rate as f64).round() as usize)
+            ((actual_chunk as f64 * target_sample_rate as f64 / pcm.sample_rate as f64).round() as usize)
                 .min(resampled[0].len())
         } else {
             resampled[0].len()
@@ -291,14 +295,14 @@ fn resample_if_needed(pcm: decoder::PcmData) -> Result<decoder::PcmData, String>
     }
 
     let new_duration = if !output[0].is_empty() {
-        output[0].len() as f64 / 44100.0
+        output[0].len() as f64 / target_sample_rate as f64
     } else {
         pcm.duration_secs
     };
 
     Ok(decoder::PcmData {
         samples: output,
-        sample_rate: 44100,
+        sample_rate: target_sample_rate,
         channels: num_channels,
         duration_secs: new_duration,
     })
@@ -324,6 +328,7 @@ fn encode_mp3(
     pcm: &[f32],
     num_channels: usize,
     sample_rate: u32,
+    bit_rate: u32,
     output_path: &str,
 ) -> Result<(), String> {
     use std::io::Write;
@@ -334,7 +339,13 @@ fn encode_mp3(
         .map_err(|e| format!("设置声道数失败: {}", e))?
         .with_sample_rate(sample_rate)
         .map_err(|e| format!("设置采样率失败: {}", e))?
-        .with_brate(mp3lame_encoder::Bitrate::Kbps192)
+        .with_brate(match bit_rate {
+            128 => mp3lame_encoder::Bitrate::Kbps128,
+            192 => mp3lame_encoder::Bitrate::Kbps192,
+            256 => mp3lame_encoder::Bitrate::Kbps256,
+            320 => mp3lame_encoder::Bitrate::Kbps320,
+            _ => mp3lame_encoder::Bitrate::Kbps192,
+        })
         .map_err(|e| format!("设置比特率失败: {}", e))?
         .with_quality(mp3lame_encoder::Quality::Best)
         .map_err(|e| format!("设置质量失败: {}", e))?

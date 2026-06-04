@@ -32,6 +32,8 @@ pub fn start_conversion(
     state: State<'_, AppState>,
     files: Vec<AudioFile>,
     output_dir: String,
+    sample_rate: u32,
+    bit_rate: u32,
 ) -> Result<(), String> {
     if state.converting.load(Ordering::Relaxed) {
         return Err("已有转换任务正在运行".to_string());
@@ -46,7 +48,7 @@ pub fn start_conversion(
     let app_handle = app.clone();
 
     std::thread::spawn(move || {
-        converter::convert_files(&app_handle, &files, &output_dir, &cancel_flag);
+        converter::convert_files(&app_handle, &files, &output_dir, &cancel_flag, sample_rate, bit_rate);
         converting.store(false, Ordering::Relaxed);
     });
 
