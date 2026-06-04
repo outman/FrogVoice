@@ -47,6 +47,10 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Clear xwin cargo config (Windows native build)
+        if: matrix.platform == 'windows-latest'
+        run: echo "" > src-tauri/.cargo/config.toml
+
       - name: Build app
         run: pnpm tauri build --target ${{ matrix.target }}
 

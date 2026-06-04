@@ -1,3 +1,5 @@
+# Cross-compilation config for macOS → Windows (xwin + nightly).
+# CI overrides this file on native Windows builds — do NOT delete.
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld"
 rustflags = [
