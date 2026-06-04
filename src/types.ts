@@ -33,6 +33,28 @@ export interface FileEntry {
   status: FileConvertStatus;
 }
 
+export interface OutputSettings {
+  sampleRate: number;   // 44100 | 48000
+  bitRate: number;      // 128 | 192 | 256 | 320
+}
+
+export const SAMPLE_RATE_OPTIONS = [
+  { label: '44100 Hz', value: 44100 },
+  { label: '48000 Hz', value: 48000 },
+] as const;
+
+export const BIT_RATE_OPTIONS = [
+  { label: '128 kbps', value: 128 },
+  { label: '192 kbps', value: 192 },
+  { label: '256 kbps', value: 256 },
+  { label: '320 kbps', value: 320 },
+] as const;
+
+export const DEFAULT_OUTPUT_SETTINGS: OutputSettings = {
+  sampleRate: 44100,
+  bitRate: 192,
+};
+
 export function formatDuration(secs: number | null): string {
   if (secs === null || secs === undefined) return '--:--';
   const minutes = Math.floor(secs / 60);
