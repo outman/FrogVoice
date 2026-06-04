@@ -18,6 +18,7 @@ const {
   startConversion,
   openFolder,
   reset,
+  resetConversion,
 } = useConverter();
 
 const isLoading = computed(() => isScanning.value || isConverting.value);
@@ -82,6 +83,7 @@ function handleOpenFolder() {
         :done-summary="doneSummary"
         @start="handleStart"
         @open-folder="handleOpenFolder"
+        @reset="resetConversion"
       />
     </div>
   </div>

@@ -102,6 +102,15 @@ export function useConverter() {
     error.value = '';
   }
 
+  function resetConversion() {
+    stopListening();
+    for (const entry of files) {
+      entry.status = { type: 'Pending' };
+    }
+    doneSummary.value = null;
+    error.value = '';
+  }
+
   return {
     files,
     isConverting,
@@ -112,5 +121,6 @@ export function useConverter() {
     startConversion,
     openFolder,
     reset,
+    resetConversion,
   };
 }

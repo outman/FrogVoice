@@ -11,6 +11,7 @@ defineProps<{
 const emit = defineEmits<{
   start: [];
   openFolder: [];
+  reset: [];
 }>();
 </script>
 
@@ -35,6 +36,13 @@ const emit = defineEmits<{
         @click="emit('openFolder')"
       >
         打开输出文件夹
+      </button>
+      <button
+        v-if="doneSummary"
+        class="btn btn-primary"
+        @click="emit('reset')"
+      >
+        重新开始
       </button>
       <button
         v-if="files.length > 0 && !isConverting && !doneSummary"
