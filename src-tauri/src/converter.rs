@@ -247,7 +247,7 @@ fn resample_if_needed(pcm: decoder::PcmData) -> Result<decoder::PcmData, String>
         window: WindowFunction::BlackmanHarris2,
     };
 
-    let ratio = pcm.sample_rate as f64 / 44100.0;
+    let ratio = 44100.0 / pcm.sample_rate as f64;
     let mut resampler = SincFixedIn::<f32>::new(ratio, 2.0, params, chunk_size, num_channels)
         .map_err(|e| format!("创建重采样器失败: {}", e))?;
 
@@ -319,6 +319,7 @@ fn interleave(pcm: &decoder::PcmData) -> Vec<f32> {
 }
 
 /// Encode interleaved f32 stereo PCM to MP3 file using LAME encoder.
+/// Processes in chunks of 1152 samples (one MP3 frame) for correctness.
 fn encode_mp3(
     pcm: &[f32],
     num_channels: usize,
@@ -340,33 +341,42 @@ fn encode_mp3(
         .build()
         .map_err(|e| format!("构建编码器失败: {}", e))?;
 
-    let input = mp3lame_encoder::InterleavedPcm(pcm);
-
-    // Allocate output buffer using LAME's recommended size
-    let num_samples = pcm.len() / num_channels;
-    let buf_size = mp3lame_encoder::max_required_buffer_size(num_samples);
-    let mut mp3_buf = Vec::with_capacity(buf_size);
-    mp3_buf.resize(buf_size, 0u8);
-
-    let encoded = encoder
-        .encode(input, mp3_buf.spare_capacity_mut())
-        .map_err(|e| format!("MP3 编码失败: {}", e))?;
-
-    // Flush remaining frames
-    let flush_size = mp3lame_encoder::max_required_buffer_size(0);
-    let mut flush_buf = Vec::with_capacity(flush_size);
-    flush_buf.resize(flush_size, 0u8);
-
-    let flushed = encoder
-        .flush::<mp3lame_encoder::FlushNoGap>(flush_buf.spare_capacity_mut())
-        .map_err(|e| format!("MP3 刷新失败: {}", e))?;
-
-    // Write to file
     let mut file =
         std::fs::File::create(output_path).map_err(|e| format!("无法创建输出文件: {}", e))?;
-    file.write_all(&mp3_buf[..encoded])
-        .map_err(|e| format!("写入失败: {}", e))?;
-    file.write_all(&flush_buf[..flushed])
+
+    // Encode in chunks of 1152 samples per channel (one MP3 frame at any sample rate)
+    let frames_per_chunk = 1152;
+    let total_frames = pcm.len() / num_channels;
+
+    // Allocate buffer once — len=0, capacity=buf_size so spare_capacity_mut works correctly
+    let buf_size = mp3lame_encoder::max_required_buffer_size(frames_per_chunk);
+    let mut mp3_buf: Vec<u8> = Vec::with_capacity(buf_size);
+
+    let mut pos = 0;
+    while pos < total_frames {
+        let end = (pos + frames_per_chunk).min(total_frames);
+        let chunk = &pcm[pos * num_channels..end * num_channels];
+        let input = mp3lame_encoder::InterleavedPcm(chunk);
+        let n = encoder
+            .encode(input, mp3_buf.spare_capacity_mut())
+            .map_err(|e| format!("MP3 编码失败: {}", e))?;
+        unsafe {
+            mp3_buf.set_len(n);
+        }
+        file.write_all(&mp3_buf)
+            .map_err(|e| format!("写入失败: {}", e))?;
+        mp3_buf.clear(); // reset len to 0, keep capacity
+        pos = end;
+    }
+
+    // Flush remaining frames
+    let flushed = encoder
+        .flush::<mp3lame_encoder::FlushNoGap>(mp3_buf.spare_capacity_mut())
+        .map_err(|e| format!("MP3 刷新失败: {}", e))?;
+    unsafe {
+        mp3_buf.set_len(flushed);
+    }
+    file.write_all(&mp3_buf)
         .map_err(|e| format!("写入失败: {}", e))?;
 
     Ok(())
