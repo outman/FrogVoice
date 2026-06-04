@@ -65,7 +65,7 @@ export function useConverter() {
     }
   }
 
-  async function startConversion(outputDir: string) {
+  async function startConversion(outputDir: string, sampleRate: number, bitRate: number) {
     if (isConverting.value || files.length === 0) return;
 
     // Reset all statuses to Pending
@@ -79,7 +79,7 @@ export function useConverter() {
 
     try {
       const audioFiles = files.map((f) => f.file);
-      await invoke('start_conversion', { files: audioFiles, outputDir });
+      await invoke('start_conversion', { files: audioFiles, outputDir, sampleRate, bitRate });
     } catch (e) {
       error.value = String(e);
       isConverting.value = false;
