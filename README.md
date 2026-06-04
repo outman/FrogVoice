@@ -6,6 +6,10 @@
 
 音频批量转 MP3 工具 —— 拖入文件夹，一键转换为 192kbps / 44100Hz 立体声 MP3。
 
+<div align="center">
+  <img src="frog-voice-screenshot.png" alt="FrogVoice Screenshot" width="600" />
+</div>
+
 ## 支持格式
 
 | 输入 | WAV, MP3, FLAC, AAC, OGG, OGA, M4A, AIFF, AIF, MP4, M4V |
