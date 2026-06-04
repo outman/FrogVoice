@@ -21,7 +21,6 @@ usage() {
     echo "  - rustup toolchain install nightly"
     echo "  - brew install llvm"
     echo "  - xwin --accept-license splat --output .xwin"
-    echo "  - scripts/download-ffmpeg.sh --all"
     exit 0
 }
 
@@ -61,11 +60,6 @@ if [[ -n "$TARGET" ]]; then
 
         if [[ ! -d "$PROJECT_DIR/.xwin/crt" ]]; then
             echo "❌ Windows SDK not found. Run: xwin --accept-license splat --output .xwin"
-            exit 1
-        fi
-
-        if [[ ! -f "$PROJECT_DIR/src-tauri/binaries/ffmpeg-$TARGET.exe" ]]; then
-            echo "❌ Windows ffmpeg sidecar not found. Run: scripts/download-ffmpeg.sh --all"
             exit 1
         fi
 
