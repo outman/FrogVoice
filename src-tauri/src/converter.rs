@@ -328,32 +328,37 @@ fn encode_mp3(
     use std::io::Write;
 
     let mut encoder = mp3lame_encoder::Builder::new()
-        .map_err(|e| format!("初始化编码器失败: {}", e))?
-        .set_num_channels(num_channels)
+        .ok_or("初始化编码器失败")?
+        .with_num_channels(num_channels as u8)
         .map_err(|e| format!("设置声道数失败: {}", e))?
-        .set_sample_rate(sample_rate)
+        .with_sample_rate(sample_rate)
         .map_err(|e| format!("设置采样率失败: {}", e))?
-        .set_brate(mp3lame_encoder::Bitrate::Kbps192)
+        .with_brate(mp3lame_encoder::Bitrate::Kbps192)
         .map_err(|e| format!("设置比特率失败: {}", e))?
-        .set_quality(mp3lame_encoder::Quality::Best)
+        .with_quality(mp3lame_encoder::Quality::Best)
         .map_err(|e| format!("设置质量失败: {}", e))?
         .build()
         .map_err(|e| format!("构建编码器失败: {}", e))?;
 
     let input = mp3lame_encoder::InterleavedPcm(pcm);
 
-    // Allocate output buffer: worst case ~1.25x input + 7200 bytes
-    let buf_size = pcm.len() / num_channels * 5 / 4 + 7200;
-    let mut mp3_buf = vec![0u8; buf_size];
+    // Allocate output buffer using LAME's recommended size
+    let num_samples = pcm.len() / num_channels;
+    let buf_size = mp3lame_encoder::max_required_buffer_size(num_samples);
+    let mut mp3_buf = Vec::with_capacity(buf_size);
+    mp3_buf.resize(buf_size, 0u8);
 
     let encoded = encoder
-        .encode(input, &mut mp3_buf)
+        .encode(input, mp3_buf.spare_capacity_mut())
         .map_err(|e| format!("MP3 编码失败: {}", e))?;
 
     // Flush remaining frames
-    let mut flush_buf = vec![0u8; 7200];
+    let flush_size = mp3lame_encoder::max_required_buffer_size(0);
+    let mut flush_buf = Vec::with_capacity(flush_size);
+    flush_buf.resize(flush_size, 0u8);
+
     let flushed = encoder
-        .flush::<mp3lame_encoder::FlushNoGap>(&mut flush_buf)
+        .flush::<mp3lame_encoder::FlushNoGap>(flush_buf.spare_capacity_mut())
         .map_err(|e| format!("MP3 刷新失败: {}", e))?;
 
     // Write to file

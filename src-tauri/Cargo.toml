@@ -25,6 +25,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["time"] }
 symphonia = { version = "0.5", features = ["aac", "flac", "mp3", "ogg", "wav", "aiff", "alac", "isomp4", "mpa"] }
-mp3lame-encoder = "1"
+mp3lame-encoder = "0.2"
 rubato = "0.15"
 

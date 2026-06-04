@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 /// Format duration in seconds to "M:SS" display string
 pub fn format_duration(secs: f64) -> String {
     let total_secs = secs as u64;
